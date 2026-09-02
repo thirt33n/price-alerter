@@ -27,6 +27,8 @@ jobs:
         run: pip install requests beautifulsoup4
 
       - name: Run tracker
+        env:
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
         run: python tracker.py
 
       - name: Commit updated tracked.json

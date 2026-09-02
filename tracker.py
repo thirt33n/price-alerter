@@ -59,13 +59,22 @@ def extract_price(text):
         return None
 
 
+SCRAPERAPI_KEY = __import__("os").environ.get("SCRAPERAPI_KEY", "")
+
+
 def fetch_price(url):
-    headers = {
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    }
-    resp = requests.get(url, headers=headers, timeout=15)
+    if SCRAPERAPI_KEY:
+        fetch_url = "https://api.scraperapi.com/"
+        params = {"api_key": SCRAPERAPI_KEY, "url": url, "render": "false"}
+        resp = requests.get(fetch_url, params=params, timeout=30)
+    else:
+        headers = {
+            "User-Agent": random.choice(USER_AGENTS),
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        }
+        resp = requests.get(url, headers=headers, timeout=15)
+
     if resp.status_code != 200:
         raise RuntimeError(f"HTTP {resp.status_code} fetching {url}")
 
@@ -78,10 +87,10 @@ def fetch_price(url):
             if price is not None:
                 return price
 
-    # Fallback: title used to confirm we didn't hit a CAPTCHA page
     title = soup.select_one("#productTitle")
     if not title:
-        raise RuntimeError("Could not find price or product title — likely blocked/CAPTCHA")
+        snippet = resp.text[:300].replace("\n", " ")
+        raise RuntimeError(f"Blocked/CAPTCHA likely. Response snippet: {snippet}")
 
     raise RuntimeError("Product page loaded but no price element matched")
 
@@ -147,7 +156,7 @@ def main():
         else:
             item["notified_at_price"] = None
 
-        time.sleep(random.uniform(2, 5))  # polite delay between requests
+        time.sleep(random.uniform(2, 5))
 
     if changed:
         save_tracked(items)
