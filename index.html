@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon Price Tracker</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #2a2e37;
+    --text: #e6e8eb;
+    --muted: #9aa1ac;
+    --accent: #ff9900;
+    --accent-hover: #e88a00;
+    --danger: #e5484d;
+    --success: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 16px 80px;
+  }
+  .container { max-width: 560px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    margin-top: 14px;
+  }
+  label:first-child { margin-top: 0; }
+  input {
+    width: 100%;
+    background: #0f1115;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  button {
+    width: 100%;
+    margin-top: 18px;
+    background: var(--accent);
+    color: #111;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: var(--accent-hover); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status {
+    font-size: 13px;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+  .status.error { color: var(--danger); }
+  .status.success { color: var(--success); }
+  .settings-toggle {
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    text-decoration: underline;
+    margin-bottom: 16px;
+    display: inline-block;
+  }
+  .settings-box { display: none; }
+  .settings-box.open { display: block; }
+  .item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .item .name { font-weight: 600; margin-bottom: 4px; }
+  .item .meta { color: var(--muted); }
+  .item a { color: var(--accent); text-decoration: none; }
+  small.hint { color: var(--muted); display: block; margin-top: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛒 Amazon Price Tracker</h1>
+  <p class="subtitle">Get notified via ntfy.sh when a price drops below your target.</p>
+
+  <span class="settings-toggle" onclick="toggleSettings()">⚙️ GitHub settings (one-time setup)</span>
+  <div class="card settings-box" id="settingsBox">
+    <label>GitHub username</label>
+    <input id="ghOwner" placeholder="yourusername">
+    <label>Repo name</label>
+    <input id="ghRepo" placeholder="amazon-tracker">
+    <label>Personal Access Token</label>
+    <input id="ghToken" type="password" placeholder="ghp_xxxxxxxxxxxx">
+    <small class="hint">Needs "repo" scope. Stored only in this browser's localStorage — never sent anywhere except GitHub's API.</small>
+    <button onclick="saveSettings()">Save Settings</button>
+    <div class="status" id="settingsStatus"></div>
+  </div>
+
+  <div class="card">
+    <label>Amazon product URL</label>
+    <input id="url" placeholder="https://www.amazon.com/dp/XXXXXXXXXX">
+
+    <label>Target price ($)</label>
+    <input id="targetPrice" type="number" step="0.01" placeholder="49.99">
+
+    <label>ntfy.sh topic</label>
+    <input id="ntfyTopic" placeholder="my-secret-price-alerts-123">
+    <small class="hint">Subscribe to this topic in the ntfy app or at ntfy.sh/&lt;topic&gt; to receive alerts.</small>
+
+    <label>Nickname (optional)</label>
+    <input id="name" placeholder="Sony Headphones">
+
+    <button id="submitBtn" onclick="addProduct()">Add to Tracker</button>
+    <div class="status" id="formStatus"></div>
+  </div>
+
+  <div id="itemsList"></div>
+</div>
+
+<script>
+const SETTINGS_KEY = "amazon_tracker_gh_settings";
+
+function loadSettings() {
+  const raw = localStorage.getItem(SETTINGS_KEY);
+  return raw ? JSON.parse(raw) : { owner: "", repo: "", token: "" };
+}
+
+function toggleSettings() {
+  const box = document.getElementById("settingsBox");
+  box.classList.toggle("open");
+  const s = loadSettings();
+  document.getElementById("ghOwner").value = s.owner;
+  document.getElementById("ghRepo").value = s.repo;
+  document.getElementById("ghToken").value = s.token;
+}
+
+function saveSettings() {
+  const owner = document.getElementById("ghOwner").value.trim();
+  const repo = document.getElementById("ghRepo").value.trim();
+  const token = document.getElementById("ghToken").value.trim();
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({ owner, repo, token }));
+  const status = document.getElementById("settingsStatus");
+  status.textContent = "Saved.";
+  status.className = "status success";
+  loadItems();
+}
+
+async function githubRequest(path, options = {}) {
+  const s = loadSettings();
+  if (!s.owner || !s.repo || !s.token) {
+    throw new Error("Missing GitHub settings — click the settings link above.");
+  }
+  const res = await fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/contents/${path}`, {
+    ...options,
+    headers: {
+      "Authorization": `Bearer ${s.token}`,
+      "Accept": "application/vnd.github+json",
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`GitHub API ${res.status}: ${body}`);
+  }
+  return res.json();
+}
+
+async function getTrackedFile() {
+  const data = await githubRequest("tracked.json");
+  const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+  return { content, sha: data.sha };
+}
+
+async function putTrackedFile(items, sha, message) {
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(items, null, 2))));
+  await githubRequest("tracked.json", {
+    method: "PUT",
+    body: JSON.stringify({
+      message,
+      content: encoded,
+      sha,
+    }),
+  });
+}
+
+async function addProduct() {
+  const url = document.getElementById("url").value.trim();
+  const targetPrice = parseFloat(document.getElementById("targetPrice").value);
+  const ntfyTopic = document.getElementById("ntfyTopic").value.trim();
+  const name = document.getElementById("name").value.trim() || url;
+  const btn = document.getElementById("submitBtn");
+  const status = document.getElementById("formStatus");
+
+  if (!url || isNaN(targetPrice) || !ntfyTopic) {
+    status.textContent = "Please fill in URL, target price, and ntfy topic.";
+    status.className = "status error";
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = "Saving...";
+  status.className = "status";
+
+  try {
+    const { content, sha } = await getTrackedFile();
+    content.push({
+      name,
+      url,
+      target_price: targetPrice,
+      ntfy_topic: ntfyTopic,
+      added_at: new Date().toISOString(),
+    });
+    await putTrackedFile(content, sha, `Add tracked item: ${name}`);
+    status.textContent = "Added! Check will run within ~30 min (or trigger manually in Actions tab).";
+    status.className = "status success";
+    document.getElementById("url").value = "";
+    document.getElementById("targetPrice").value = "";
+    document.getElementById("ntfyTopic").value = "";
+    document.getElementById("name").value = "";
+    loadItems();
+  } catch (e) {
+    status.textContent = "Error: " + e.message;
+    status.className = "status error";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function loadItems() {
+  const listEl = document.getElementById("itemsList");
+  const s = loadSettings();
+  if (!s.owner || !s.repo || !s.token) return;
+
+  try {
+    const { content } = await getTrackedFile();
+    if (!content.length) {
+      listEl.innerHTML = "";
+      return;
+    }
+    listEl.innerHTML = "<h3 style='font-size:14px;color:var(--muted)'>Tracked items</h3>" +
+      content.map(item => `
+        <div class="item">
+          <div class="name">${escapeHtml(item.name)}</div>
+          <div class="meta">
+            Target: $${item.target_price} &middot;
+            Last price: ${item.last_checked_price != null ? "$" + item.last_checked_price : "not checked yet"}<br>
+            ntfy topic: ${escapeHtml(item.ntfy_topic)}<br>
+            <a href="${item.url}" target="_blank">View on Amazon</a>
+          </div>
+        </div>
+      `).join("");
+  } catch (e) {
+    listEl.innerHTML = `<div class="status error">Could not load items: ${e.message}</div>`;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// auto-load on page open if settings already saved
+loadItems();
+</script>
+</body>
+</html>
