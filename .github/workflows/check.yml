@@ -2,7 +2,7 @@ name: Check Amazon Prices
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # every 30 minutes
+    - cron: '0 * * * *'   # every 30 minutes
   workflow_dispatch: {}        # allows manual trigger from Actions tab
   push:
     paths:
