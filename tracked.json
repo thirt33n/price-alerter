@@ -5,7 +5,7 @@
     "target_price": 140000,
     "ntfy_topic": "random_bs_sp6767",
     "added_at": "2026-09-02T21:09:27.589Z",
-    "last_error": "Could not find price or product title \u2014 likely blocked/CAPTCHA",
-    "last_checked_at": "2026-09-02T21:12:08.288857+00:00"
+    "last_error": "Blocked/CAPTCHA likely. Response snippet: <!DOCTYPE html> <!--[if lt IE 7]> <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8 a-lt-ie7\"> <![endif]--> <!--[if IE 7]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8\"> <![endif]--> <!--[if IE 8]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9\"> <![endif]--> <!--[if gt IE 8]><!--> <html ",
+    "last_checked_at": "2026-09-02T21:25:03.337706+00:00"
   }
 ]
