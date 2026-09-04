@@ -5,9 +5,9 @@
     "target_price": 110000,
     "ntfy_topic": "random_bs_sp6767",
     "added_at": "2026-09-02T21:09:27.589Z",
-    "last_checked_at": "2026-09-04T16:28:39.463872+00:00",
+    "last_checked_at": "2026-09-04T19:41:18.855454+00:00",
     "last_checked_price": 132590.0,
     "notified_at_price": null,
-    "last_error": "Blocked/CAPTCHA likely. Response snippet: <!DOCTYPE html> <html lang=\"en\"> <head>     <meta charset=\"utf-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">     <title></title>     <style>         body {             font-family: \"Arial\";         }     </style>     <script type=\"text/javascript\">     window.awsWafCoo"
+    "last_error": "Blocked/CAPTCHA likely. Response snippet: <!DOCTYPE html> <!--[if lt IE 7]> <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8 a-lt-ie7\"> <![endif]--> <!--[if IE 7]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8\"> <![endif]--> <!--[if IE 8]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9\"> <![endif]--> <!--[if gt IE 8]><!--> <html "
   }
 ]
