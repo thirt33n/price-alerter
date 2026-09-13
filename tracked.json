@@ -5,9 +5,9 @@
     "target_price": 110000,
     "ntfy_topic": "random_bs_sp6767",
     "added_at": "2026-09-02T21:09:27.589Z",
-    "last_checked_at": "2026-09-13T12:04:14.287609+00:00",
+    "last_checked_at": "2026-09-13T16:27:38.123170+00:00",
     "last_checked_price": 164500.0,
     "notified_at_price": null,
-    "last_error": "HTTPSConnectionPool(host='api.scraperapi.com', port=443): Read timed out. (read timeout=30)"
+    "last_error": "Blocked/CAPTCHA likely. Response snippet: <!DOCTYPE html> <!--[if lt IE 7]> <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8 a-lt-ie7\"> <![endif]--> <!--[if IE 7]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9 a-lt-ie8\"> <![endif]--> <!--[if IE 8]>    <html lang=\"en-us\" class=\"a-no-js a-lt-ie9\"> <![endif]--> <!--[if gt IE 8]><!--> <html "
   }
 ]
