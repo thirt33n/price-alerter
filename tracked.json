@@ -5,9 +5,8 @@
     "target_price": 110000,
     "ntfy_topic": "random_bs_sp6767",
     "added_at": "2026-09-02T21:09:27.589Z",
-    "last_checked_at": "2026-09-21T14:19:51.837395+00:00",
-    "last_checked_price": 171990.0,
-    "notified_at_price": null,
-    "last_error": "HTTPSConnectionPool(host='api.scraperapi.com', port=443): Read timed out. (read timeout=30)"
+    "last_checked_at": "2026-09-21T19:35:09.800146+00:00",
+    "last_checked_price": 166900.0,
+    "notified_at_price": null
   }
 ]
