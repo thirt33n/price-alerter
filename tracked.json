@@ -5,8 +5,9 @@
     "target_price": 110000,
     "ntfy_topic": "random_bs_sp6767",
     "added_at": "2026-09-02T21:09:27.589Z",
-    "last_checked_at": "2026-09-30T13:54:02.410301+00:00",
+    "last_checked_at": "2026-09-30T19:28:30.454703+00:00",
     "last_checked_price": 164490.0,
-    "notified_at_price": null
+    "notified_at_price": null,
+    "last_error": "Product page loaded but no price element matched"
   }
 ]
